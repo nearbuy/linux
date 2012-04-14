@@ -205,7 +205,7 @@ static struct ip_tunnel * ipgre_tunnel_lookup(struct net_device *dev,
 	unsigned int h1 = HASH(key);
 	struct ip_tunnel *t, *cand = NULL;
 	struct ipgre_net *ign = net_generic(net, ipgre_net_id);
-	int dev_type = (gre_proto == htons(ETH_P_TEB)) ?
+	int dev_type = (gre_proto == htons(ETH_P_NB_TEB)) ?
 		       ARPHRD_ETHER : ARPHRD_IPGRE;
 	int score, cand_score = 4;
 
@@ -885,7 +885,7 @@ static netdev_tx_t ipgre_tunnel_xmit(struct sk_buff *skb, struct net_device *dev
 
 	((__be16 *)(iph + 1))[0] = tunnel->parms.o_flags;
 	((__be16 *)(iph + 1))[1] = (dev->type == ARPHRD_ETHER) ?
-				   htons(ETH_P_TEB) : skb->protocol;
+				   htons(ETH_P_NB_TEB) : skb->protocol;
 
 	if (tunnel->parms.o_flags&(GRE_KEY|GRE_CSUM|GRE_SEQ)) {
 		__be32 *ptr = (__be32*)(((u8*)iph) + tunnel->hlen - 4);
@@ -1705,7 +1705,7 @@ static int __init ipgre_init(void)
 {
 	int err;
 
-	printk(KERN_INFO "GRE over IPv4 tunneling driver\n");
+	printk(KERN_INFO "GRE over IPv4 tunneling driver using alt proto 0x6557\n");
 
 	err = register_pernet_device(&ipgre_net_ops);
 	if (err < 0)
