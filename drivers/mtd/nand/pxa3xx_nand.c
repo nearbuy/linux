@@ -24,6 +24,7 @@
 #include <linux/slab.h>
 #include <linux/of.h>
 #include <linux/of_device.h>
+#include <linux/of_mtd.h>
 
 #if defined(CONFIG_ARCH_PXA) || defined(CONFIG_ARCH_MMP)
 #define ARCH_HAS_DMA
@@ -244,6 +245,29 @@ static struct pxa3xx_nand_flash builtin_flash_types[] = {
 { "512MiB 8-bit",  0xdc2c,  64, 2048,  8,  8, 4096, &timing[2] },
 { "512MiB 16-bit", 0xcc2c,  64, 2048, 16, 16, 4096, &timing[2] },
 { "256MiB 16-bit", 0xba20,  64, 2048, 16, 16, 2048, &timing[3] },
+};
+
+static u8 bb_pattern[] = {'M', 'V', 'B', 'b', 't', '0' };
+static u8 bb_mirror_pattern[] = {'1', 't', 'b', 'B', 'V', 'M' };
+
+static struct nand_bbt_descr bbt_main_descr = {
+	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
+		| NAND_BBT_2BIT | NAND_BBT_VERSION,
+	.offs =	8,
+	.len = 6,
+	.veroffs = 14,
+	.maxblocks = 8,		/* Last 8 blocks in each chip */
+	.pattern = bb_pattern
+};
+
+static struct nand_bbt_descr bbt_mirror_descr = {
+	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
+		| NAND_BBT_2BIT | NAND_BBT_VERSION,
+	.offs =	8,
+	.len = 6,
+	.veroffs = 14,
+	.maxblocks = 8,		/* Last 8 blocks in each chip */
+	.pattern = bb_mirror_pattern
 };
 
 /* Define a default flash type setting serve as flash detecting only */
@@ -1100,6 +1124,12 @@ KEEP_CONFIG:
 	if (info->reg_ndcr & NDCR_DWIDTH_M)
 		chip->options |= NAND_BUSWIDTH_16;
 
+	if (pdata->flash_bbt) {
+		chip->bbt_td = &bbt_main_descr;
+		chip->bbt_md = &bbt_mirror_descr;
+		chip->bbt_options |= NAND_BBT_USE_FLASH;
+	}
+
 	if (nand_scan_ident(mtd, 1, def))
 		return -ENODEV;
 	/* calculate addressing information */
@@ -1318,6 +1348,7 @@ static int pxa3xx_nand_probe_dt(struct platform_device *pdev)
 	if (of_get_property(np, "marvell,nand-keep-config", NULL))
 		pdata->keep_config = 1;
 	of_property_read_u32(np, "num-cs", &pdata->num_cs);
+	pdata->flash_bbt = of_get_nand_on_flash_bbt(np);
 
 	pdev->dev.platform_data = pdata;
 
