@@ -157,7 +157,6 @@ struct pxa3xx_nand_host {
 	void			*info_data;
 
 	/* page size of attached chip */
-	unsigned int		page_size;
 	int			use_ecc;
 	int			cs;
 
@@ -649,12 +648,12 @@ static int prepare_command_pool(struct pxa3xx_nand_info *info, int command,
 			info->buf_start += mtd->writesize;
 
 		/* Second command setting for large pages */
-		if (host->page_size >= PAGE_CHUNK_SIZE)
+		if (mtd->writesize >= PAGE_CHUNK_SIZE)
 			info->ndcb0 |= NDCB0_DBC | (NAND_CMD_READSTART << 8);
 
 	case NAND_CMD_SEQIN:
 		/* small page addr setting */
-		if (unlikely(host->page_size < PAGE_CHUNK_SIZE)) {
+		if (unlikely(mtd->writesize < PAGE_CHUNK_SIZE)) {
 			info->ndcb1 = ((page_addr & 0xFFFFFF) << 8)
 					| (column & 0xFF);
 
@@ -939,7 +938,6 @@ static int pxa3xx_nand_config_flash(struct pxa3xx_nand_info *info,
 	}
 
 	/* calculate flash information */
-	host->page_size = f->page_size;
 	host->read_id_bytes = (f->page_size == 2048) ? 4 : 2;
 
 	/* calculate addressing information */
@@ -978,11 +976,9 @@ static int pxa3xx_nand_detect_config(struct pxa3xx_nand_info *info)
 	if (ndcr & NDCR_PAGE_SZ) {
 		/* Controller's FIFO size */
 		info->fifo_size = 2048;
-		host->page_size = 2048;
 		host->read_id_bytes = 4;
 	} else {
 		info->fifo_size = 512;
-		host->page_size = 512;
 		host->read_id_bytes = 2;
 	}
 
