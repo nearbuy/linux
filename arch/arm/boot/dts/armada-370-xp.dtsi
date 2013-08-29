@@ -37,6 +37,15 @@
 		};
 	};
 
+	clocks {
+		/* NAND reference clock */
+		nandclk: nd_clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <125000000>;
+		};
+	};
+
 	soc {
 		#address-cells = <1>;
 		#size-cells = <1>;
