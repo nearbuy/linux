@@ -610,6 +610,7 @@ static int prepare_command_pool(struct pxa3xx_nand_info *info, int command,
 	info->use_spare		= 1;
 	info->use_dma		= (use_dma) ? 1 : 0;
 	info->retcode		= ERR_NONE;
+	info->ndcb3		= 0;
 	if (info->cs != 0)
 		info->ndcb0 = NDCB0_CSEL;
 	else
@@ -631,7 +632,6 @@ static int prepare_command_pool(struct pxa3xx_nand_info *info, int command,
 	default:
 		info->ndcb1 = 0;
 		info->ndcb2 = 0;
-		info->ndcb3 = 0;
 		break;
 	}
 
