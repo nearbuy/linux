@@ -91,6 +91,17 @@
 				phy-mode = "rgmii-id";
 			};
 
+			gpio-keys {
+				compatible = "gpio-keys";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reset@1 {
+					label = "Reset Button";
+					linux,code = <116>;
+					gpios = <&gpio1 26 1>;
+				};
+			};
+
 			mvsdio@d4000 {
 				pinctrl-0 = <&sdio_pins3>;
 				pinctrl-names = "default";
