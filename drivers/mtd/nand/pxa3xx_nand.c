@@ -280,6 +280,11 @@ static void pxa3xx_nand_set_timing(struct pxa3xx_nand_host *host,
 	nand_writel(info, NDTR1CS0, ndtr1);
 }
 
+/*
+ * Set the data and OOB size, depending on the selected
+ * spare and ECC configuration.
+ * Only applicable to READ0, READOOB and PAGEPROG commands.
+ */
 static void pxa3xx_set_datasize(struct pxa3xx_nand_info *info)
 {
 	struct pxa3xx_nand_host *host = info->host[info->cs];
@@ -641,6 +646,7 @@ static int prepare_command_pool(struct pxa3xx_nand_info *info, int command,
 		info->ndcb1 = (column & 0xFF);
 		info->ndcb3 = 256;
 		info->data_size = 256;
+		info->oob_size = 0;
 		break;
 
 	case NAND_CMD_READID:
@@ -651,6 +657,7 @@ static int prepare_command_pool(struct pxa3xx_nand_info *info, int command,
 		info->ndcb1 = (column & 0xFF);
 
 		info->data_size = 8;
+		info->oob_size = 0;
 		break;
 	case NAND_CMD_STATUS:
 		info->buf_count = 1;
@@ -659,6 +666,7 @@ static int prepare_command_pool(struct pxa3xx_nand_info *info, int command,
 				| command;
 
 		info->data_size = 8;
+		info->oob_size = 0;
 		break;
 
 	case NAND_CMD_ERASE1:
